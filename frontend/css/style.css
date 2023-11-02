@@ -1,0 +1,8 @@
+body {
+    background-image: url('../src/php.png');
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+}
+html, body {
+    height: 100%;
+}
