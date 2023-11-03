@@ -2,7 +2,7 @@ $(document).ready(function() {
 
     var username = localStorage.getItem('username');
     var email = localStorage.getItem('useremail');
-
+    var token = localStorage.getItem('token');
 
 /*     console.log('username:', username);
     console.log('email:', email);
@@ -63,11 +63,12 @@ $(document).ready(function() {
             },
             
             success: function(response) {
-               /*  console.log(response) */
+                console.log(response) 
                 if (response.success) {
                     // respuesta exitosa al iniciar sesión
                     localStorage.setItem('username', response.data.username);
                     localStorage.setItem('useremail', response.data.email);
+                    localStorage.setItem('token', response.token);
                  //   window.localStorage.token = response.data.username;
                     console.log(response.data.username)
                     $("#mensajeLogin").html(response.message);
@@ -90,6 +91,7 @@ $(document).ready(function() {
 
     $("#cerrarSesion").click(function() {
         localStorage.removeItem('username');
+        localStorage.removeItem('token');
         $.ajax({
            type: "POST",
            url: "../backend/cerrar_sesion.php", 

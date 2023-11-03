@@ -1,7 +1,7 @@
 <?php
 require_once 'config.php';
 
-class Auth {
+class Usuario {
     private $id;
     private $username;
     private $password;
@@ -49,26 +49,22 @@ class Auth {
     }
 
     public static function registrarUsuario($username, $password, $email, $token, $created_at, $updated_at) {
-        // Generar un hash seguro de la contraseña
-        $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-    
-        $sql = "INSERT INTO users (username, password, email, token, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)";
-        $parametros = [$username, $hashedPassword, $email, $token, $created_at, $updated_at];
+        $sql = "INSERT INTO usuarios (username, password, email, token, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)";
+        $parametros = [$username, $password, $email, $token, $created_at, $updated_at];
         $response = [];
-    
+
         try {
             ConexionDB::getInstancia()->ejecutarConsulta($sql, $parametros);
             $response = ['success' => true, 'message' => 'Registro exitoso'];
         } catch (Exception $e) {
             $response = ['success' => false, 'message' => 'Error en el registro'];
         }
-    
+
         echo json_encode($response);
     }
-    
 
     public static function login($username, $password) {
-        $sql = "SELECT id, username, email, password FROM users WHERE username = ?";
+        $sql = "SELECT id, username, password FROM usuarios WHERE username = ?";
         $parametros = [$username];
 
         try {
@@ -78,10 +74,6 @@ class Auth {
             if ($usuario) {
                 if (password_verify($password, $usuario['password'])) {
                     // Generar un token (puedes personalizar la generación de tokens)
-                    $usuarioData = new stdClass;
-                    $usuarioData->username = $usuario['username'];
-                    $usuarioData->email = $usuario['email'];
-
                     $token = self::generateToken();
 
                     // Actualizar el token en la base de datos (opcional)
@@ -91,8 +83,7 @@ class Auth {
                         'success' => true,
                         'message' => 'Inicio de sesión exitoso',
                         'token' => $token,
-                        'data' => $usuarioData,
-                           ];
+                    ];
                 } else {
                     $response = [
                         'success' => false,
@@ -115,25 +106,24 @@ class Auth {
         return json_encode($response);
     }
 
-    private static function generateToken() {
+    private function generateToken() {
         // Genera un token simple (puedes personalizar esto según tus necesidades)
         return bin2hex(random_bytes(16)); // Genera una cadena hexadecimal aleatoria
     }
 
-    public static function updateToken($userId, $newToken){
-        $sql = "UPDATE users SET token = ? WHERE id = ?";
-        $parametros = [$newToken, $userId]; // Usar $userId en lugar de $this->id
-    
+    public function updateToken($newToken) {
+        $sql = "UPDATE usuarios SET token = ? WHERE id = ?";
+        $parametros = [$newToken, $this->id];
+
         try {
             ConexionDB::getInstancia()->ejecutarConsulta($sql, $parametros);
         } catch (Exception $e) {
             // Manejar errores de actualización del token, si es necesario
         }
     }
-    
 
     public static function autenticarUsuario($username, $password) {
-        $sql = "SELECT id, username, password, email FROM users WHERE username = ?";
+        $sql = "SELECT id, username, password, email FROM usuarios WHERE username = ?";
         $parametros = [$username];
     
         try {
@@ -179,3 +169,41 @@ class Auth {
     }
 }
 ?>
+<?php
+require_once '../includes/usuario.php';
+require_once '../includes/config.php';
+
+header('Content-Type: application/json');
+session_start();
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (isset($_POST['registro'])) {
+        // Registro de usuario
+        $username = $_POST['username'];
+        $password = $_POST['password'];
+        $email = $_POST['email'];
+    
+        // Genera un token (puedes personalizar la generación de tokens)
+        $token = bin2hex(random_bytes(16)); // Genera una cadena hexadecimal aleatoria de 32 caracteres
+    
+        // Obtiene la fecha actual en el formato deseado
+        $created_at = date('Y-m-d H:i:s'); // Formato "YYYY-MM-DD HH:MM:SS"
+        $updated_at = $created_at; // Actualización inicial igual a la creación
+    
+        // Llama al método de la clase Usuario para registrar un usuario
+        $resultadoRegistro = Usuario::registrarUsuario($username, $password, $email, $token, $created_at, $updated_at);
+    
+        echo $resultadoRegistro;
+    } elseif (isset($_POST['login'])) {
+        // Inicio de sesión
+        $username = $_POST['username'];
+        $password = $_POST['password'];
+
+        // Llama al método de la clase Usuario para iniciar sesión y obtener un token
+        $usuarioAutenticado = Usuario::login($username, $password);
+
+        echo $usuarioAutenticado;
+    }
+}
+?>
+
