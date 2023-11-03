@@ -12,14 +12,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $password = $_POST['password'];
         $email = $_POST['email'];
     
-        // Genera un token (puedes personalizar la generación de tokens)
-        $token = bin2hex(random_bytes(16)); // Genera una cadena hexadecimal aleatoria de 32 caracteres
-    
-        // Obtiene la fecha actual en el formato deseado
+        $token = bin2hex(random_bytes(16)); 
+
         $created_at = date('Y-m-d H:i:s'); // Formato "YYYY-MM-DD HH:MM:SS"
-        $updated_at = $created_at; // Actualización inicial igual a la creación
+        $updated_at = $created_at; 
     
-        // Llama al método de la clase Usuario para registrar un usuario
         $resultadoRegistro = Auth::registrarUsuario($username, $password, $email, $token, $created_at, $updated_at);
     
         echo $resultadoRegistro;
@@ -28,7 +25,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $username = $_POST['username'];
         $password = $_POST['password'];
 
-        // Llama al método de la clase Usuario para iniciar sesión y obtener un token
         $usuarioAutenticado = Auth::login($username, $password);
 
         echo $usuarioAutenticado;

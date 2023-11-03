@@ -49,8 +49,7 @@ class Auth {
     }
 
     public static function registrarUsuario($username, $password, $email, $token, $created_at, $updated_at) {
-        // Generar un hash seguro de la contraseña
-        $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
     
         $sql = "INSERT INTO users (username, password, email, token, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)";
         $parametros = [$username, $hashedPassword, $email, $token, $created_at, $updated_at];
@@ -77,14 +76,12 @@ class Auth {
 
             if ($usuario) {
                 if (password_verify($password, $usuario['password'])) {
-                    // Generar un token (puedes personalizar la generación de tokens)
                     $usuarioData = new stdClass;
                     $usuarioData->username = $usuario['username'];
                     $usuarioData->email = $usuario['email'];
 
                     $token = self::generateToken();
 
-                    // Actualizar el token en la base de datos (opcional)
                     self::updateToken($usuario['id'], $token);
 
                     $response = [
@@ -116,22 +113,20 @@ class Auth {
     }
 
     private static function generateToken() {
-        // Genera un token simple (puedes personalizar esto según tus necesidades)
-        return bin2hex(random_bytes(16)); // Genera una cadena hexadecimal aleatoria
+        
+        return bin2hex(random_bytes(16)); // cadena hexadecimal aleatoria
     }
 
     public static function updateToken($userId, $newToken){
         $sql = "UPDATE users SET token = ? WHERE id = ?";
-        $parametros = [$newToken, $userId]; // Usar $userId en lugar de $this->id
+        $parametros = [$newToken, $userId]; 
     
         try {
             ConexionDB::getInstancia()->ejecutarConsulta($sql, $parametros);
         } catch (Exception $e) {
-            // Manejar errores de actualización del token, si es necesario
         }
     }
-    
-
+ 
     public static function autenticarUsuario($username, $password) {
         $sql = "SELECT id, username, password, email FROM users WHERE username = ?";
         $parametros = [$username];
@@ -152,10 +147,7 @@ class Auth {
                         'message' => 'Inicio de sesión exitoso',
                         'data' => $usuarioData,
                     ];
-                    //  para PHP $usuarioAutenticado = new Usuario($usuarioData->id, $usuarioData->username, $usuarioData->email);
-
-               //     return $usuarioAutenticado;
-
+           
                 } else {
                     $response = [
                         'success' => false,
